@@ -37,12 +37,13 @@ NOTE_MAP = {
     ';': 'E5',
            }
 
-def play_note(note='C', duration=1, delay=0, vol=1, verbose=False):
+def play_note(note='C', duration=1.5, delay=0, vol=1, verbose=False):
     # requires sox to be installed: http://sox.sf.net
+    fadeout_len = duration/2.0
     command = (
         "play -qn synth {duration} pluck {note}"
-        " fade l 0 {duration} 2 reverb vol {vol}"
-    ).format(note=note, duration=duration, vol=vol)
+        " fade l 0 {duration} {fadeout_len} reverb vol {vol}"
+    ).format(note=note, duration=duration, fadeout_len=fadeout_len, vol=vol)
 
     if verbose:
         print(command)
