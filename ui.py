@@ -8,8 +8,8 @@ This is what we're gonna builddddd....
 │  │███││███│  │  │███││███││███│  │  │███││███│  │  │███││███││███│  │
 │  │█W█││█E█│  │  │█T█││█Y█││█U█│  │  │█O█││█P█│  │  │█]█││███││███│  │
 │  │███││███│  │  │███││███││███│  │  │███││███│  │  │███││███││███│  │
-
 │  └─┬─┘└─┬─┘  │  └─┬─┘└─┬─┘└─┬─┘  │  └─┬─┘└─┬─┘  │  └─┬─┘└─┬─┘└─┬─┘  │
+
 │    │    │    │    │    │    │    │    │    │    │    │    │    │    │
 │ A  │ S  │ D  │ F  │ G  │  H │ J  │ K  │ L  │ ;  │ '  │ \  │    │    │
 │    │    │    │    │    │    │    │    │    │    │    │    │    │    │
@@ -39,17 +39,19 @@ class NoteWidget(urwid.WidgetWrap):
                     u'│███\n',
                     u'│███\n',
                     u'│███\n',
+                    u'└─┬─\n',
                 ]
         if self.note.upper() in ('C', 'E', 'F', 'B'):
             top_right = u'┐' if self.last_corner else ''
             end_right = u'│' if self.last_corner else ''
-
+            bottom_left = u'│' if self.note.upper() in ('C', 'F') else u'┘'
             return [
                     u'{}──{}\n'.format(edge_char, top_right),
                     u'│  {}\n'.format(end_right),
                     u'│  {}\n'.format(end_right),
                     u'│  {}\n'.format(end_right),
                     u'│  {}\n'.format(end_right),
+                    u'{}  {}\n'.format(bottom_left, end_right),
                 ]
         if self.note.upper() in ('D', 'G', 'A'):
             return [
@@ -58,9 +60,28 @@ class NoteWidget(urwid.WidgetWrap):
                     u'│\n',
                     u'│\n',
                     u'│\n',
+                    u'┘\n',
                 ]
         raise ValueError("Don't know how to draw note %r" % self.note)
 
+#class NoteBottomWidget(
+class KeyboardWidget(urwid.WidgetWrap):
+    def __init__(self):
+        self.columns = urwid.Columns([
+                                      ('pack', NoteWidget('C', first_corner=True)),
+                                      ('pack', NoteWidget('C#')),
+                                      ('pack', NoteWidget('D')),
+                                      ('pack', NoteWidget('D#')),
+                                      ('pack', NoteWidget('E')),
+                                      ('pack', NoteWidget('F')),
+                                      ('pack', NoteWidget('F#')),
+                                      ('pack', NoteWidget('G')),
+                                      ('pack', NoteWidget('G#')),
+                                      ('pack', NoteWidget('A')),
+                                      ('pack', NoteWidget('A#')),
+                                      ('pack', NoteWidget('B')),
+                                      ('pack', NoteWidget('c', last_corner=True)),
+                                     ])
 if __name__== '__main__':
     widget = urwid.Columns([
                                       ('pack', NoteWidget('C', first_corner=True)),
