@@ -37,6 +37,7 @@ NOTE_MAP = {
     ';': 'E5',
            }
 
+
 def play_note(note='C', duration=1.5, delay=0, vol=1, verbose=False):
     # requires sox to be installed: http://sox.sf.net
     fadeout_len = duration/2.0
@@ -50,14 +51,17 @@ def play_note(note='C', duration=1.5, delay=0, vol=1, verbose=False):
 
     subprocess.Popen(command.split())
 
-def show_or_exit(key):
+
+def handle_key(key):
     if key.upper() in NOTE_MAP:
         txt.set_text(repr(key))
         play_note(NOTE_MAP[key.upper()])
     elif key.upper() == 'ESC':
         raise urwid.ExitMainLoop()
 
-txt = urwid.Text(u"Play some piano, mannnnnnn!!!")
-fill = urwid.Filler(txt, 'top')
-loop = urwid.MainLoop(fill, unhandled_input=show_or_exit)
-loop.run()
+
+if __name__ == '__main__':
+    txt = urwid.Text(u"Play some piano, mannnnnnn!!!")
+    fill = urwid.Filler(txt, 'top')
+    loop = urwid.MainLoop(fill, unhandled_input=handle_key)
+    loop.run()
