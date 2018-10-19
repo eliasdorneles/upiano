@@ -38,6 +38,9 @@ NOTE_MAP = {
            }
 
 
+# play -qn synth {duration} pluck {note}
+# fade l 0 {duration} {fadeout_len} reverb vol {vol}
+
 def play_note(note='C', duration=1.5, delay=0, vol=1, verbose=False):
     # requires sox to be installed: http://sox.sf.net
     fadeout_len = duration/2.0
@@ -49,7 +52,7 @@ def play_note(note='C', duration=1.5, delay=0, vol=1, verbose=False):
     if verbose:
         print(command)
 
-    subprocess.Popen(command.split())
+    subprocess.Popen(command.split(), stderr=subprocess.DEVNULL)
 
 
 def handle_key(key):
