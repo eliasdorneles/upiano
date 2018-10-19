@@ -60,7 +60,7 @@ class NoteUpperWidget(urwid.WidgetWrap):
             bottom_left = u'│' if normalized_note in ('C', 'F') else u'┘'
             filling = self._build_block(' ', 2, highlight)
             top_edge = u'──'
-            if self.last_corner:
+            if self.last_corner and normalized_note == 'C':
                 top_edge += u'──'
                 filling = self._build_block(' ', 4, highlight)
             return [
@@ -151,10 +151,19 @@ class KeyboardWidget(urwid.WidgetWrap):
             'B':
             (NoteUpperWidget('B'), NoteBottomWidget()),
             'C5':
-            (NoteUpperWidget('C5', last_corner=True), NoteBottomWidget('last')),
+            (NoteUpperWidget('C5'), NoteBottomWidget()),
+            'C#5':
+            (NoteUpperWidget('C#5'), NoteBottomWidget()),
+            'D5':
+            (NoteUpperWidget('D5'), NoteBottomWidget()),
+            'D#5':
+            (NoteUpperWidget('C#5'), NoteBottomWidget()),
+            'E5':
+            (NoteUpperWidget('E5', last_corner=True), NoteBottomWidget('last')),
         }
-        self.available_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#',
-                                'A', 'A#', 'B', 'C5']
+        self.available_notes = [
+            'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#',
+            'A', 'A#', 'B', 'C5', 'C#5', 'D5', 'D#5', 'E5']
         top = urwid.Columns([('pack', self.note_widgets[note][0])
                              for note in self.available_notes])
         bottom = urwid.Columns([
@@ -192,7 +201,6 @@ if __name__ == '__main__':
     widget = urwid.Filler(widget, 'top')
 
     asyncio_loop = asyncio.get_event_loop()
-    asyncio_loop.call_later(3, KEYBOARD_WIDGET.play, asyncio_loop, 'E')
     evl = urwid.AsyncioEventLoop(loop=asyncio_loop)
     urwid_loop = urwid.MainLoop(widget, event_loop=evl, unhandled_input=handle_key)
     urwid_loop.run()
