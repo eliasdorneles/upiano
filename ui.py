@@ -2,8 +2,10 @@ import asyncio
 import urwid
 from functools import partial
 from upiano import play_note, NOTE_MAP
+from note_render import render_upper_part_key
+from note_render import render_lower_part_key
 
-'''
+"""
 This is what we're gonna builddddd....
 ┌──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┬──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┐
 │  │███││███│  │  │███││███││███│  │  │███││███│  │  │███││███││███│  │
@@ -17,7 +19,7 @@ This is what we're gonna builddddd....
 │    │    │    │    │    │    │    │    │    │    │    │    │    │    │
 │ C  │ D  │ E  │    │    │  A │ B  │ c  │ d  │ e  │    │    │    │    │
 └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
-'''
+"""
 
 
 class NoteUpperWidget(urwid.WidgetWrap):
@@ -26,66 +28,20 @@ class NoteUpperWidget(urwid.WidgetWrap):
         self.first_corner = first_corner
         self.last_corner = last_corner
         self.note = note
-        self.text = urwid.Text(self._build_text(), wrap='clip')
+        self.text = urwid.Text(self._build_text(), wrap="clip")
         super(NoteUpperWidget, self).__init__(self.text)
-
-    def _build_block(self, character, size, highlight=False):
-        if highlight:
-            return '#' * size
-        return character * size
 
     def update(self, highlight=False):
         self.text.set_text(self._build_text(highlight=highlight))
 
     def _build_text(self, highlight=False):
-        # 'C#'
-        if self.first_corner:
-            edge_char = u'┌'
-        else:
-            edge_char = u'┬'
-        normalized_note = self.note.replace('5', '').upper()
-        if normalized_note in ('C#', 'D#', 'F#', 'G#', 'A#'):
-            filling = self._build_block('█', 3, highlight)
-            return [
-                    u'┬───\n',
-                    u'│' + filling + '\n',
-                    u'│' + filling + '\n',
-                    u'│' + filling + '\n',
-                    u'│' + filling + '\n',
-                    u'└─┬─',
-                ]
-        if normalized_note in ('C', 'E', 'F', 'B'):
-            top_right = u'┐' if self.last_corner else ''
-            end_right = u'│' if self.last_corner else ''
-            bottom_left = u'│' if normalized_note in ('C', 'F') else u'┘'
-            filling = self._build_block(' ', 2, highlight)
-            top_edge = u'──'
-            if self.last_corner and normalized_note == 'C':
-                top_edge += u'──'
-                filling = self._build_block(' ', 4, highlight)
-            return [
-                    u'{}{}{}\n'.format(edge_char, top_edge, top_right),
-                    u'│' + filling + '{}\n'.format(end_right),
-                    u'│' + filling + '{}\n'.format(end_right),
-                    u'│' + filling + '{}\n'.format(end_right),
-                    u'│' + filling + '{}\n'.format(end_right),
-                    u'{}{}{}'.format(bottom_left, filling, end_right),
-                ]
-
-        if normalized_note in ('D', 'G', 'A'):
-            return [
-                    u'┬\n',
-                    u'│\n',
-                    u'│\n',
-                    u'│\n',
-                    u'│\n',
-                    u'┘',
-                ]
-        raise ValueError("Don't know how to draw note %r" % self.note)
+        return render_upper_part_key(
+            self.note, self.first_corner, self.last_corner, highlight=highlight
+        )
 
 
 class NoteBottomWidget(urwid.WidgetWrap):
-    def __init__(self, which='middle'):
+    def __init__(self, which="middle"):
         self.which = which
         self.text = urwid.Text(self._build_text())
         super(NoteBottomWidget, self).__init__(self.text)
@@ -94,82 +50,63 @@ class NoteBottomWidget(urwid.WidgetWrap):
         self.text.set_text(self._build_text(highlight=highlight))
 
     def _build_text(self, highlight=False):
-        if self.which == 'first':
-            text = '''
-│    
-│    
-│    
-│    
-└────
-            '''.strip()
-        if self.which == 'last':
-            text = '''
-│    │
-│    │
-│    │
-│    │
-┴────┘
-            '''.strip()
-        else:
-            text = '''
-│    
-│    
-│    
-│    
-┴────
-        '''.strip()
-        if highlight:
-            text = text.replace(' ', '#')
-        return text
+        return render_lower_part_key(
+            is_first=self.which == "first",
+            is_last=self.which == "last",
+            highlight=highlight,
+        )
 
 
 class KeyboardWidget(urwid.WidgetWrap):
     def __init__(self):
         self.note_widgets = {
-            'C':
-            (NoteUpperWidget('C', first_corner=True), NoteBottomWidget('first')),
-            'C#':
-            (NoteUpperWidget('C#'), NoteBottomWidget()),
-            'D':
-            (NoteUpperWidget('D'), NoteBottomWidget()),
-            'D#':
-            (NoteUpperWidget('D#'), NoteBottomWidget()),
-            'E':
-            (NoteUpperWidget('E'), NoteBottomWidget()),
-            'F':
-            (NoteUpperWidget('F'), NoteBottomWidget()),
-            'F#':
-            (NoteUpperWidget('F#'), NoteBottomWidget()),
-            'G':
-            (NoteUpperWidget('G'), NoteBottomWidget()),
-            'G#':
-            (NoteUpperWidget('G#'), NoteBottomWidget()),
-            'A':
-            (NoteUpperWidget('A'), NoteBottomWidget()),
-            'A#':
-            (NoteUpperWidget('A#'), NoteBottomWidget()),
-            'B':
-            (NoteUpperWidget('B'), NoteBottomWidget()),
-            'C5':
-            (NoteUpperWidget('C5'), NoteBottomWidget()),
-            'C#5':
-            (NoteUpperWidget('C#5'), NoteBottomWidget()),
-            'D5':
-            (NoteUpperWidget('D5'), NoteBottomWidget()),
-            'D#5':
-            (NoteUpperWidget('C#5'), NoteBottomWidget()),
-            'E5':
-            (NoteUpperWidget('E5', last_corner=True), NoteBottomWidget('last')),
+            "C": (NoteUpperWidget("C", first_corner=True), NoteBottomWidget("first")),
+            "C#": (NoteUpperWidget("C#"), NoteBottomWidget()),
+            "D": (NoteUpperWidget("D"), NoteBottomWidget()),
+            "D#": (NoteUpperWidget("D#"), NoteBottomWidget()),
+            "E": (NoteUpperWidget("E"), NoteBottomWidget()),
+            "F": (NoteUpperWidget("F"), NoteBottomWidget()),
+            "F#": (NoteUpperWidget("F#"), NoteBottomWidget()),
+            "G": (NoteUpperWidget("G"), NoteBottomWidget()),
+            "G#": (NoteUpperWidget("G#"), NoteBottomWidget()),
+            "A": (NoteUpperWidget("A"), NoteBottomWidget()),
+            "A#": (NoteUpperWidget("A#"), NoteBottomWidget()),
+            "B": (NoteUpperWidget("B"), NoteBottomWidget()),
+            "C5": (NoteUpperWidget("C5"), NoteBottomWidget()),
+            "C#5": (NoteUpperWidget("C#5"), NoteBottomWidget()),
+            "D5": (NoteUpperWidget("D5"), NoteBottomWidget()),
+            "D#5": (NoteUpperWidget("C#5"), NoteBottomWidget()),
+            "E5": (NoteUpperWidget("E5", last_corner=True), NoteBottomWidget("last")),
         }
         self.available_notes = [
-            'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#',
-            'A', 'A#', 'B', 'C5', 'C#5', 'D5', 'D#5', 'E5']
-        top = urwid.Columns([('pack', self.note_widgets[note][0])
-                             for note in self.available_notes])
-        bottom = urwid.Columns([
-            ('pack', self.note_widgets[note][1])
-            for note in self.available_notes
-            if '#' not in note])
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
+            "C5",
+            "C#5",
+            "D5",
+            "D#5",
+            "E5",
+        ]
+        top = urwid.Columns(
+            [("pack", self.note_widgets[note][0]) for note in self.available_notes]
+        )
+        bottom = urwid.Columns(
+            [
+                ("pack", self.note_widgets[note][1])
+                for note in self.available_notes
+                if "#" not in note
+            ]
+        )
         self.pile = urwid.Pile([top, bottom])
         super(KeyboardWidget, self).__init__(self.pile)
 
@@ -191,14 +128,14 @@ def handle_key(key):
     if key.upper() in NOTE_MAP:
         note = NOTE_MAP[key.upper()]
         KEYBOARD_WIDGET.play(asyncio_loop, note)
-    elif key.upper() == 'ESC':
+    elif key.upper() == "ESC":
         raise urwid.ExitMainLoop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     KEYBOARD_WIDGET = widget = KeyboardWidget()
     widget = urwid.Padding(widget)
-    widget = urwid.Filler(widget, 'top')
+    widget = urwid.Filler(widget, "top")
 
     asyncio_loop = asyncio.get_event_loop()
     evl = urwid.AsyncioEventLoop(loop=asyncio_loop)
