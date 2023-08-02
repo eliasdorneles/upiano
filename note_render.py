@@ -9,7 +9,7 @@ def render_upper_part_key(
     Return a list of strings that represent the note in the upper part of the
     piano keyboard.
     """
-    normalized_note = note.replace("5", "").upper()
+    normalized_note = note.replace("5", "").replace("6", "").upper()
 
     if normalized_note in ("C#", "D#", "F#", "G#", "A#"):
         filling = ("#" if highlight else "█") * 3
@@ -61,7 +61,7 @@ def render_upper_part_key(
         if use_rich:
             filling = " " * len(filling)
             filling = "[on {}]{}[/]".format(
-                "red" if highlight else "transparent", filling
+                "red" if highlight else "white", filling
             )
 
         edge_char = "┌" if first_corner else "┬"
@@ -86,6 +86,7 @@ def render_lower_part_key(
 ):
     if is_first and is_last:
         raise ValueError("Can't be first and last at the same time")
+
     if is_first:
         text = """
 │    
@@ -93,7 +94,7 @@ def render_lower_part_key(
 │    
 │    
 └────
-            """.strip()
+        """.strip()
     elif is_last:
         text = """
 │    │
@@ -101,7 +102,7 @@ def render_lower_part_key(
 │    │
 │    │
 ┴────┘
-            """.strip()
+        """.strip()
     else:
         text = """
 │    
@@ -109,12 +110,13 @@ def render_lower_part_key(
 │    
 │    
 ┴────
-    """.strip()
+        """.strip()
 
-    if highlight:
-        if use_rich:
-            text = text.replace("    ", "[on red]    [/]")
-        else:
+    if use_rich:
+        color = "red" if highlight else "white"
+        text = text.replace("    ", f"[on {color}]    [/]")
+    else:
+        if highlight:
             text = text.replace(" ", "#")
 
     return text
