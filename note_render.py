@@ -1,3 +1,6 @@
+import re
+
+
 def render_upper_part_key(
     note,
     first_corner: bool = False,
@@ -9,7 +12,7 @@ def render_upper_part_key(
     Return a list of strings that represent the note in the upper part of the
     piano keyboard.
     """
-    normalized_note = note.replace("5", "").replace("6", "").upper()
+    normalized_note = re.sub("[0-9]", "", note).upper()
 
     if normalized_note in ("C#", "D#", "F#", "G#", "A#"):
         filling = ("#" if highlight else "█") * 3

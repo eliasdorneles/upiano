@@ -1,3 +1,4 @@
+import fluidsynth
 from textual.app import App
 from textual.reactive import reactive
 from textual.containers import Horizontal
@@ -28,26 +29,7 @@ from note_render import render_upper_part_key, render_lower_part_key
 
 """
 
-
-"""
-┌──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┬──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┐
-│  │   ││   │  │  │   ││   ││   │  │  │   ││   │  │  │   ││   ││   │  │
-│  │   ││   │  │  │   ││   ││   │  │  │   ││   │  │  │   ││   ││   │  │
-│  │   ││   │  │  │   ││   ││   │  │  │   ││   │  │  │   ││   ││   │  │
-│  │   ││   │  │  │   ││   ││   │  │  │   ││   │  │  │   ││   ││   │  │
-│  │   ││   │  │  │   ││   ││   │  │  │   ││   │  │  │   ││   ││   │  │
-│  ╰─┬─╯╰─┬─╯  │  ╰─┬─╯╰─┬─╯╰─┬─╯  │  ╰─┬─┘╰─┬─╯  │  ╰─┬─╯╰─┬─╯╰─┬─╯  │
-│    │    │    │    │    │    │    │    │    │    │    │    │    │    │
-│    │    │    │    │    │    │    │    │    │    │    │    │    │    │
-│    │    │    │    │    │    │    │    │    │    │    │    │    │    │
-│    │    │    │    │    │    │    │    │    │    │    │    │    │    │
-│    │    │    │    │    │    │    │    │    │    │    │    │    │    │
-╰────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────╯
-
-"""
-
-
-NOTES = [
+SCALE = [
     "C",
     "C#",
     "D",
@@ -60,24 +42,22 @@ NOTES = [
     "A",
     "A#",
     "B",
-    "C5",
-    "C#5",
-    "D5",
-    "D#5",
-    "E5",
-    "F5",
-    "F#5",
-    "G5",
-    "G#5",
-    "A5",
-    "A#5",
-    "B5",
-    "C6",
-    "C#6",
-    "D6",
-    "D#6",
-    "E6",
 ]
+
+NOTES = [f"{note}{octave}" for octave in [3, 4, 5, 6] for note in SCALE]
+
+
+def midi_value(note):
+    midi_c4 = 60
+    return NOTES.index(note) + midi_c4
+
+
+def start_play_note(note_value, channel=0, velocity=100):
+    synthesizer.noteon(channel, note_value, velocity)
+
+
+def stop_play_note(note_value, channel=0):
+    synthesizer.noteoff(channel, note_value)
 
 
 class NoteUpperWidget(Static):
@@ -95,6 +75,7 @@ class NoteUpperWidget(Static):
         self._content_width = 0
         self.note_index = note_index
         self.note = NOTES[note_index]
+        self.note_midi_value = midi_value(self.note)
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -114,6 +95,16 @@ class NoteUpperWidget(Static):
     def get_content_width(self, *args, **kwargs):
         return self._content_width
 
+    def on_mouse_down(self, event):
+        if event.button == 1:
+            start_play_note(self.note_midi_value)
+            self.highlight = True
+
+    def on_mouse_up(self, event):
+        if event.button == 1:
+            stop_play_note(self.note_midi_value)
+            self.highlight = False
+
 
 class NoteLowerWidget(Static):
     highlight = reactive(False)
@@ -129,6 +120,7 @@ class NoteLowerWidget(Static):
         super().__init__(**kwargs)
         self.note_index = note_index
         self.note = NOTES[note_index]
+        self.note_midi_value = midi_value(self.note)
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -148,6 +140,21 @@ class NoteLowerWidget(Static):
         if self.note_index == len(NOTES) - 1:
             return 6
         return 0 if "#" in self.note else 5
+
+    # TODO: when mouse moves out of the widget, the note should stop playing,
+    # but only if it's started by this widget -- e.g., if it started by a key press event,
+    # it should continue playing until the key is released
+    # TODO: highlight on/off messages should be sent to parent widget, so that
+    # corresponding uppper/lower part of the key can be highlighted
+    def on_mouse_down(self, event):
+        if event.button == 1:
+            start_play_note(self.note_midi_value)
+            self.highlight = True
+
+    def on_mouse_up(self, event):
+        if event.button == 1:
+            stop_play_note(self.note_midi_value)
+            self.highlight = False
 
 
 class KeyboardWidget(Widget):
@@ -194,11 +201,20 @@ class MyApp(App):
     ]
 
     def compose(self):
+        # TODO: add a MIDI program selector widget
         yield Header()
         yield Footer()
         yield KeyboardWidget()
 
 
 if __name__ == "__main__":
+    synthesizer = fluidsynth.Synth()
+    synthesizer.start()
+
+    # TODO: check license of this soundfont
+    # http://www.schristiancollins.com/generaluser.php
+    soundfont_id = synthesizer.sfload("GeneralUser_GS_v1.471.sf2")
+    synthesizer.program_select(0, soundfont_id, 0, 0)
+
     app = MyApp()
     app.run()
