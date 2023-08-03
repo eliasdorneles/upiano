@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "upiano"
+version = "0.1.0"
+description = "Terminal Piano App"
+authors = ["Elias Dorneles <elias.dorneles@hey.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+textual = "^0.32.0"
+pyFluidSynth = "^1.3.2"
+
+
+[tool.poetry.group.dev.dependencies]
+textual-dev = "^1.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
