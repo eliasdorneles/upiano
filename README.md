@@ -2,6 +2,7 @@
 
 A Piano in your terminal.
 
+
 ## Screenshot
 
  ![](./screenshot-upiano.png)
@@ -20,6 +21,7 @@ And then run:
 Make sure your terminal window is big enough.
 The wider you can make it, the more keys you'll have! 🎹 😀
 
+
 ## Powered by
 
 * [Python](https://www.python.org) 🐍
@@ -28,3 +30,24 @@ The wider you can make it, the more keys you'll have! 🎹 😀
 * [pyFluidSynth](https://github.com/nwhitehead/pyfluidsynth)
 
 Made with ❤️  by Elias Dorneles
+
+
+## History
+
+This started as a fun pairing project by friends
+[Elias](https://github.com/eliasdorneles) and
+[Nandaja](https://github.com/nandajavarma) around 2017, after they had
+finished their [Recurse Center](https://recurse.com) retreat and were missing
+hacking together.
+
+They had fun building a small terminal piano app using
+[urwid](https://urwid.org) for the user interface and playing notes by spawning
+[sox](https://sox.sourceforge.net) subprocesses. This version is available in
+the project source code, if you have urwid and sox installed, you can try it by
+running: `python upiano/legacy.py`.
+
+Fast-forward to 2023, Elias attended EuroPython and learned the
+[Textual](https://textual.textualize.io) library there, got excited about
+terminal apps again and decided to reboot this project, and have even more fun
+by taking it to the next level. What the next level actually is, he's not quite
+sure, but it definitely involves learning MIDI stuff!
