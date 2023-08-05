@@ -5,6 +5,7 @@ description = "Terminal Piano App"
 authors = ["Elias Dorneles <elias.dorneles@hey.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [{include = "upiano"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

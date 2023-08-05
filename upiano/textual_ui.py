@@ -8,7 +8,7 @@ from textual.widget import Widget
 from textual.widgets import Static
 from textual.widgets import Header
 from textual.widgets import Footer
-from note_render import render_upper_part_key, render_lower_part_key
+from upiano.note_render import render_upper_part_key, render_lower_part_key
 
 """
 ┌──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┬──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┐
@@ -47,6 +47,8 @@ SCALE = [
 ]
 
 NOTES = [f"{note}{octave}" for octave in [3, 4, 5, 6] for note in SCALE]
+
+SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
 
 
 def midi_value(note):
@@ -211,14 +213,23 @@ class MyApp(App):
             yield KeyboardWidget()
 
 
+def load_soundfont(name):
+    soundfont_path = os.path.join(SOUNDFONTS_DIR, name)
+    return synthesizer.sfload(soundfont_path)
+
+
+def select_midi_program(soundfont_id, program_id):
+    synthesizer.program_select(0, soundfont_id, 0, program_id)
+
+
 if __name__ == "__main__":
     synthesizer = fluidsynth.Synth()
     synthesizer.start()
 
-    # TODO: check license of this soundfont
     # http://www.schristiancollins.com/generaluser.php
-    soundfont_id = synthesizer.sfload("GeneralUser_GS_v1.471.sf2")
-    synthesizer.program_select(0, soundfont_id, 0, 0)
+    soundfont_id = load_soundfont("GeneralUser_GS_v1.471.sf2")
+
+    select_midi_program(soundfont_id, 0)
 
     app = MyApp()
     app.run()
