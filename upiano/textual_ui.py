@@ -1,14 +1,18 @@
 import os
+from dataclasses import dataclass
 from textual.app import App
 from textual.reactive import reactive
 from textual.containers import Container
 from textual.containers import Horizontal
+from textual.containers import Vertical
+from textual.containers import Grid
 from textual.widget import Widget
 from textual.widgets import Static
 from textual.widgets import Header
 from textual.widgets import Footer
 from textual.widgets import Label
 from textual.widgets import Select
+from textual.widgets import Button
 from upiano.note_render import render_upper_part_key, render_lower_part_key
 from upiano import midi
 
@@ -48,14 +52,25 @@ SCALE = [
     "B",
 ]
 
-NOTES = [f"{note}{octave}" for octave in [3, 4, 5, 6] for note in SCALE]
+NOTES = [f"{note}{octave}" for octave in [3, 4, 5, 6, 7] for note in SCALE]
 
 SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
 
 
-def midi_value(note):
-    midi_c4 = 60
-    return NOTES.index(note) + midi_c4
+@dataclass
+class KeyboardPlayingSettings:
+    octave: int = 0
+    transpose: int = 0
+
+
+PLAY_SETTINGS = KeyboardPlayingSettings()
+
+
+def transpose_note(note_value: int):
+    """
+    Transpose a note value by the current settings (transpose and octave)
+    """
+    return note_value + PLAY_SETTINGS.transpose + PLAY_SETTINGS.octave * 12
 
 
 class NoteUpperWidget(Static):
@@ -73,7 +88,7 @@ class NoteUpperWidget(Static):
         self._content_width = 0
         self.note_index = note_index
         self.note = NOTES[note_index]
-        self.note_midi_value = midi_value(self.note)
+        self.note_midi_value = midi.note_to_midi(self.note)
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -95,12 +110,12 @@ class NoteUpperWidget(Static):
 
     def on_mouse_down(self, event):
         if event.button == 1:
-            synthesizer.note_on(self.note_midi_value)
+            synthesizer.note_on(transpose_note(self.note_midi_value))
             self.highlight = True
 
     def on_mouse_up(self, event):
         if event.button == 1:
-            synthesizer.note_off(self.note_midi_value)
+            synthesizer.note_off(transpose_note(self.note_midi_value))
             self.highlight = False
 
 
@@ -118,7 +133,7 @@ class NoteLowerWidget(Static):
         super().__init__(**kwargs)
         self.note_index = note_index
         self.note = NOTES[note_index]
-        self.note_midi_value = midi_value(self.note)
+        self.note_midi_value = midi.note_to_midi(self.note)
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -146,12 +161,12 @@ class NoteLowerWidget(Static):
     # corresponding uppper/lower part of the key can be highlighted
     def on_mouse_down(self, event):
         if event.button == 1:
-            synthesizer.note_on(self.note_midi_value)
+            synthesizer.note_on(transpose_note(self.note_midi_value))
             self.highlight = True
 
     def on_mouse_up(self, event):
         if event.button == 1:
-            synthesizer.note_off(self.note_midi_value)
+            synthesizer.note_off(transpose_note(self.note_midi_value))
             self.highlight = False
 
 
@@ -194,7 +209,6 @@ class KeyboardWidget(Widget):
 
 
 class InstrumentSelector(Widget):
-
     def __init__(self):
         super().__init__()
         self._instrument_options = [
@@ -203,18 +217,77 @@ class InstrumentSelector(Widget):
         ]
 
     def compose(self):
-        with Horizontal():
-            yield Label("Instrument:")
-            yield Select(
-                prompt="Select instrument",
-                allow_blank=False,
-                options=self._instrument_options,
-                value=0,
-            )
+        yield Label("Instrument:")
+        yield Select(
+            prompt="Select instrument",
+            allow_blank=False,
+            options=self._instrument_options,
+            value=0,
+        )
 
     def on_select_changed(self, event):
         if event.value is not None:
             synthesizer.select_midi_program(event.value)
+
+
+class TranspositionControls(Widget):
+    current_transposition = reactive(0)
+
+    def __init__(self):
+        super().__init__()
+        self.current_transposition = PLAY_SETTINGS.transpose
+
+    def compose(self):
+        yield Label("Transpose:")
+        with Horizontal():
+            yield Button("⬇️ ", id="transpose-down")
+            yield Label("0", id="transpose-value", classes="value-holder")
+            yield Button("⬆️ ", id="transpose-up")
+
+    def on_button_pressed(self, event):
+        if event.button.id == "transpose-down":
+            self.current_transposition -= 1
+        elif event.button.id == "transpose-up":
+            self.current_transposition += 1
+        label = self.query_one("#transpose-value", Label)
+        label.update(str(self.current_transposition))
+        if self.current_transposition == 0:
+            label.remove_class("modified")
+        else:
+            label.add_class("modified")
+
+    def watch_current_transposition(self, value):
+        PLAY_SETTINGS.transpose = value
+
+
+class OctaveControls(Widget):
+    current_octave = reactive(0)
+
+    def __init__(self):
+        super().__init__()
+        self.current_octave = PLAY_SETTINGS.octave
+
+    def compose(self):
+        yield Label("Octave:")
+        with Horizontal():
+            yield Button("⬇️ ", id="octave-down")
+            yield Label("0", id="octave-value", classes="value-holder")
+            yield Button("⬆️ ", id="octave-up")
+
+    def on_button_pressed(self, event):
+        if event.button.id == "octave-down":
+            self.current_octave -= 1
+        elif event.button.id == "octave-up":
+            self.current_octave += 1
+        label = self.query_one("#octave-value", Label)
+        label.update(str(self.current_octave))
+        if self.current_octave == 0:
+            label.remove_class("modified")
+        else:
+            label.add_class("modified")
+
+    def watch_current_octave(self, value):
+        PLAY_SETTINGS.octave = value
 
 
 class MyApp(App):
@@ -226,11 +299,14 @@ class MyApp(App):
     SUB_TITLE = "A piano in your terminal"
 
     def compose(self):
-        # TODO: add a MIDI program selector widget
         yield Header()
         yield Footer()
         with Container(id="main"):
-            yield InstrumentSelector()
+            with Vertical(id="instrument-controls"):
+                yield InstrumentSelector()
+                with Grid():
+                    yield OctaveControls()
+                    yield TranspositionControls()
             yield KeyboardWidget()
 
 

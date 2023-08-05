@@ -164,6 +164,19 @@ def gm_family(program_id: int):
     return _INSTRUMENT_FAMILIES[program_id // 8]
 
 
+def note_to_midi(note: str) -> int:
+    """
+    Convert a note string to a midi note value.
+    >>> note_to_midi("C4")
+    60
+    >>> note_to_midi("C#4")
+    61
+    """
+    octave = int(note[-1])
+    is_sharp = note[1] == "#"
+    return 12 * (octave + 1) + "C D EF G A B".index(note[:1]) + int(is_sharp)
+
+
 class MidiSynth:
     def __init__(self, soundfont_name=None):
         self.synthesizer = fluidsynth.Synth()

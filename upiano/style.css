@@ -2,3 +2,33 @@ KeyboardWidget {
     dock: bottom;
     height: 14;
 }
+
+#instrument-controls {
+    align: left middle;
+}
+
+#instrument-controls > * {
+    width: 50;
+    height: 5;
+}
+
+#instrument-controls Button {
+    min-width: 5;
+}
+
+#instrument-controls .value-holder {
+    min-width: 2;
+    border: thick $primary;
+    text-style: bold;
+    padding: 0 1;
+    text-align: right;
+}
+
+#instrument-controls .value-holder.modified {
+    border: thick $secondary;
+}
+
+#instrument-controls Grid {
+    grid-size: 2;
+}
+
