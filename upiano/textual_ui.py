@@ -1,5 +1,4 @@
 import os
-import fluidsynth
 from textual.app import App
 from textual.reactive import reactive
 from textual.containers import Container
@@ -8,7 +7,10 @@ from textual.widget import Widget
 from textual.widgets import Static
 from textual.widgets import Header
 from textual.widgets import Footer
+from textual.widgets import Label
+from textual.widgets import Select
 from upiano.note_render import render_upper_part_key, render_lower_part_key
+from upiano import midi
 
 """
 ┌──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┬──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┐
@@ -56,14 +58,6 @@ def midi_value(note):
     return NOTES.index(note) + midi_c4
 
 
-def start_play_note(note_value, channel=0, velocity=100):
-    synthesizer.noteon(channel, note_value, velocity)
-
-
-def stop_play_note(note_value, channel=0):
-    synthesizer.noteoff(channel, note_value)
-
-
 class NoteUpperWidget(Static):
     highlight = reactive(False)
 
@@ -101,12 +95,12 @@ class NoteUpperWidget(Static):
 
     def on_mouse_down(self, event):
         if event.button == 1:
-            start_play_note(self.note_midi_value)
+            synthesizer.note_on(self.note_midi_value)
             self.highlight = True
 
     def on_mouse_up(self, event):
         if event.button == 1:
-            stop_play_note(self.note_midi_value)
+            synthesizer.note_off(self.note_midi_value)
             self.highlight = False
 
 
@@ -152,12 +146,12 @@ class NoteLowerWidget(Static):
     # corresponding uppper/lower part of the key can be highlighted
     def on_mouse_down(self, event):
         if event.button == 1:
-            start_play_note(self.note_midi_value)
+            synthesizer.note_on(self.note_midi_value)
             self.highlight = True
 
     def on_mouse_up(self, event):
         if event.button == 1:
-            stop_play_note(self.note_midi_value)
+            synthesizer.note_off(self.note_midi_value)
             self.highlight = False
 
 
@@ -199,37 +193,49 @@ class KeyboardWidget(Widget):
             self.note_lower_widgets[note_index].highlight = True
 
 
+class InstrumentSelector(Widget):
+
+    def __init__(self):
+        super().__init__()
+        self._instrument_options = [
+            (instrument, i)
+            for i, instrument in enumerate(midi.GENERAL_MIDI_INSTRUMENTS)
+        ]
+
+    def compose(self):
+        with Horizontal():
+            yield Label("Instrument:")
+            yield Select(
+                prompt="Select instrument",
+                allow_blank=False,
+                options=self._instrument_options,
+                value=0,
+            )
+
+    def on_select_changed(self, event):
+        if event.value is not None:
+            synthesizer.select_midi_program(event.value)
+
+
 class MyApp(App):
     BINDINGS = [
         ("ctrl-c", "quit", "Quit"),
     ]
     CSS_PATH = os.path.join(os.path.dirname(__file__), "style.css")
+    TITLE = "UPiano"
+    SUB_TITLE = "A piano in your terminal"
 
     def compose(self):
         # TODO: add a MIDI program selector widget
         yield Header()
         yield Footer()
         with Container(id="main"):
+            yield InstrumentSelector()
             yield KeyboardWidget()
 
 
-def load_soundfont(name):
-    soundfont_path = os.path.join(SOUNDFONTS_DIR, name)
-    return synthesizer.sfload(soundfont_path)
-
-
-def select_midi_program(soundfont_id, program_id):
-    synthesizer.program_select(0, soundfont_id, 0, program_id)
-
-
 if __name__ == "__main__":
-    synthesizer = fluidsynth.Synth()
-    synthesizer.start()
-
-    # http://www.schristiancollins.com/generaluser.php
-    soundfont_id = load_soundfont("GeneralUser_GS_v1.471.sf2")
-
-    select_midi_program(soundfont_id, 0)
+    synthesizer = midi.MidiSynth()
 
     app = MyApp()
     app.run()
