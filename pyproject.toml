@@ -7,6 +7,9 @@ license = "MIT"
 readme = "README.md"
 packages = [{include = "upiano"}]
 
+[tool.poetry.scripts]
+upiano = "upiano.app:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 textual = "^0.32.0"

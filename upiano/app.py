@@ -1,3 +1,7 @@
+"""
+UPiano - A piano in your terminal
+"""
+
 import os
 from functools import partial
 from dataclasses import dataclass
@@ -165,8 +169,20 @@ class MyApp(App):
             )
 
 
-if __name__ == "__main__":
+def run_app(args):
+    global synthesizer
     synthesizer = midi.MidiSynth()
 
-    app = MyApp()
-    app.run()
+    MyApp().run()
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    args = parser.parse_args()
+    run_app(args)
+
+
+if __name__ == "__main__":
+    main()
