@@ -1,6 +1,8 @@
+import os
 import fluidsynth
 from textual.app import App
 from textual.reactive import reactive
+from textual.containers import Container
 from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Static
@@ -199,12 +201,14 @@ class MyApp(App):
     BINDINGS = [
         ("ctrl-c", "quit", "Quit"),
     ]
+    CSS_PATH = os.path.join(os.path.dirname(__file__), "style.css")
 
     def compose(self):
         # TODO: add a MIDI program selector widget
         yield Header()
         yield Footer()
-        yield KeyboardWidget()
+        with Container(id="main"):
+            yield KeyboardWidget()
 
 
 if __name__ == "__main__":
