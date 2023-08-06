@@ -63,7 +63,6 @@ class Key:
     note: str
     midi_value: int
     position: int
-    playing: bool = False
 
 
 class KeyDown(Message):
@@ -78,7 +77,44 @@ class KeyUp(Message):
         self.key = key
 
 
-class KeyUpperPart(Static):
+@dataclass
+class MouseStatus:
+    pressed: bool = False
+    black_key_pressed: bool = False
+
+
+MOUSE_STATUS = MouseStatus()
+
+
+class KeyPartMouseMixin:
+    def on_mouse_down(self, event):
+        MOUSE_STATUS.pressed = True
+        MOUSE_STATUS.black_key_pressed = "#" in self.key.note
+        if event.button == 1:
+            self.post_message(KeyDown(self.key))
+            self.highlight = True
+
+    def on_mouse_up(self, event):
+        MOUSE_STATUS.pressed = False
+        MOUSE_STATUS.black_key_pressed = False
+        if event.button == 1:
+            self.post_message(KeyUp(self.key))
+            self.highlight = False
+
+    def on_leave(self, event):
+        self.highlight = False
+        self.post_message(KeyUp(self.key))
+
+    def on_enter(self, event):
+        if MOUSE_STATUS.pressed:
+            if MOUSE_STATUS.black_key_pressed and "#" not in self.key.note:
+                return
+            self.post_message(KeyDown(self.key))
+            self.highlight = True
+
+
+
+class KeyUpperPart(Static, KeyPartMouseMixin):
     highlight = reactive(False)
 
     DEFAULT_CSS = """
@@ -111,18 +147,8 @@ class KeyUpperPart(Static):
     def get_content_width(self, *args, **kwargs):
         return self._content_width
 
-    def on_mouse_down(self, event):
-        if event.button == 1:
-            self.post_message(KeyDown(self.key))
-            self.highlight = True
 
-    def on_mouse_up(self, event):
-        if event.button == 1:
-            self.post_message(KeyUp(self.key))
-            self.highlight = False
-
-
-class KeyLowerPart(Static):
+class KeyLowerPart(Static, KeyPartMouseMixin):
     highlight = reactive(False)
 
     DEFAULT_CSS = """
@@ -155,21 +181,6 @@ class KeyLowerPart(Static):
             return 6
         return 0 if "#" in self.key.note else 5
 
-    # TODO: when mouse moves out of the widget, the note should stop playing,
-    # but only if it's started by this widget -- e.g., if it started by a key press event,
-    # it should continue playing until the key is released
-    # TODO: highlight on/off messages should be sent to parent widget, so that
-    # corresponding uppper/lower part of the key can be highlighted
-    def on_mouse_down(self, event):
-        if event.button == 1:
-            self.post_message(KeyDown(self.key))
-            self.highlight = True
-
-    def on_mouse_up(self, event):
-        if event.button == 1:
-            self.post_message(KeyUp(self.key))
-            self.highlight = False
-
 
 class KeyboardWidget(Widget):
     can_focus = True
@@ -183,7 +194,7 @@ class KeyboardWidget(Widget):
     def __init__(self, note_on, note_off, **kwargs):
         super().__init__(**kwargs)
         self.virtual_keys: list[Key] = [
-            Key(note, midi.note_to_midi(note), index, playing=False)
+            Key(note, midi.note_to_midi(note), index)
             for index, note in enumerate(NOTES)
         ]
 
@@ -202,23 +213,21 @@ class KeyboardWidget(Widget):
 
     def handle_key_down(self, key: Key):
         self.note_on(key.midi_value)
-        key.playing = True
         self.note_upper_widgets[key.position].highlight = True
         self.note_lower_widgets[key.position].highlight = True
 
     def handle_key_up(self, key: Key):
         self.note_off(key.midi_value)
-        key.playing = False
         self.note_upper_widgets[key.position].highlight = False
         self.note_lower_widgets[key.position].highlight = False
-
-    def play_key(self, key_index):
-        virtual_key = self.virtual_keys[key_index]
-        self.handle_key_down(virtual_key)
-        self.set_timer(0.3, partial(self.handle_key_up, virtual_key))
 
     def on_key_down(self, event):
         self.handle_key_down(event.key)
 
     def on_key_up(self, event):
         self.handle_key_up(event.key)
+
+    def play_key(self, key_index):
+        virtual_key = self.virtual_keys[key_index]
+        self.handle_key_down(virtual_key)
+        self.set_timer(0.3, partial(self.handle_key_up, virtual_key))
