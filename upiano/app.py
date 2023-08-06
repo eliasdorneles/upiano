@@ -4,18 +4,20 @@ UPiano - A piano in your terminal
 
 import os
 from dataclasses import dataclass
+
 from textual.app import App
 from textual.containers import Container
 from textual.widget import Widget
-from textual.widgets import Header
 from textual.widgets import Footer
+from textual.widgets import Header
 from textual.widgets import Label
 from textual.widgets import Select
-from upiano.keyboard_ui import KeyboardWidget, KEYMAP_CHAR_TO_INDEX
-from upiano import midi
-from upiano.widgets import NumericUpDownControl
-from upiano.widgets import LabeledSwitch
 
+from upiano import midi
+from upiano.keyboard_ui import KEYMAP_CHAR_TO_INDEX
+from upiano.keyboard_ui import KeyboardWidget
+from upiano.widgets import LabeledSwitch
+from upiano.widgets import NumericUpDownControl
 
 SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
 

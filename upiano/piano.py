@@ -1,5 +1,6 @@
-import urwid
 import subprocess
+
+import urwid
 
 """
 This is what we're gonna builddddd....

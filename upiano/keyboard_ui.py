@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 from functools import partial
+
+from textual.containers import Horizontal
 from textual.message import Message
 from textual.reactive import reactive
-from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Static
-from upiano.note_render import render_upper_part_key, render_lower_part_key
-from upiano import midi
 
+from upiano import midi
+from upiano.note_render import render_lower_part_key
+from upiano.note_render import render_upper_part_key
 
 """
 ┌──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┬──┬───┬┬───┬──┬──┬───┬┬───┬┬───┬──┐
@@ -111,7 +113,6 @@ class KeyPartMouseMixin:
                 return
             self.post_message(KeyDown(self.key))
             self.highlight = True
-
 
 
 class KeyUpperPart(Static, KeyPartMouseMixin):

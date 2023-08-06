@@ -1,9 +1,12 @@
 import asyncio
-import urwid
 from functools import partial
-from upiano.piano import play_note, NOTE_MAP
-from upiano.note_render import render_upper_part_key
+
+import urwid
+
 from upiano.note_render import render_lower_part_key
+from upiano.note_render import render_upper_part_key
+from upiano.piano import NOTE_MAP
+from upiano.piano import play_note
 
 """
 This is what we're gonna builddddd....

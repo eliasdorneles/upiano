@@ -1,8 +1,8 @@
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Label
 from textual.widgets import Button
+from textual.widgets import Label
 from textual.widgets import Switch
 
 

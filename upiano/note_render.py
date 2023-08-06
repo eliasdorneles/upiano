@@ -63,9 +63,7 @@ def render_upper_part_key(
 
         if use_rich:
             filling = " " * len(filling)
-            filling = "[on {}]{}[/]".format(
-                "red" if highlight else "white", filling
-            )
+            filling = "[on {}]{}[/]".format("red" if highlight else "white", filling)
 
         edge_char = "┌" if first_corner else "┬"
         return "\n".join(

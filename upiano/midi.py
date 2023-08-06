@@ -2,6 +2,7 @@
 MidiSynth class for playing midi notes.
 """
 import os
+
 import fluidsynth
 
 SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
