@@ -10,7 +10,9 @@ A Piano in your terminal.
 
 ## How to run
 
-Install via pip:
+First, you'll need to install [FluidSynth](https://www.fluidsynth.org/), if you haven't already. [See here how to install FluidSynth on your system](https://github.com/FluidSynth/fluidsynth/wiki/Download).
+
+Then, install `upiano` via pip:
 
     pip install upiano
 
