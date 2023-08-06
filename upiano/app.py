@@ -3,22 +3,18 @@ UPiano - A piano in your terminal
 """
 
 import os
-from functools import partial
 from dataclasses import dataclass
 from textual.app import App
-from textual.reactive import reactive
 from textual.containers import Container
-from textual.containers import Horizontal
-from textual.containers import Vertical
-from textual.containers import Grid
 from textual.widget import Widget
 from textual.widgets import Header
 from textual.widgets import Footer
 from textual.widgets import Label
 from textual.widgets import Select
-from textual.widgets import Button
-from upiano.keyboard_ui import KeyboardWidget, KEYMAP_CHAR_TO_INDEX, VIRTUAL_KEYS
+from upiano.keyboard_ui import KeyboardWidget, KEYMAP_CHAR_TO_INDEX
 from upiano import midi
+from upiano.widgets import NumericUpDownControl
+from upiano.widgets import LabeledSwitch
 
 
 SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
@@ -62,66 +58,6 @@ class InstrumentSelector(Widget):
             synthesizer.select_midi_program(event.value)
 
 
-class TranspositionControls(Widget):
-    current_transposition = reactive(0)
-
-    def __init__(self):
-        super().__init__()
-        self.current_transposition = PLAY_SETTINGS.transpose
-
-    def compose(self):
-        yield Label("Transpose:")
-        with Horizontal():
-            yield Button("⬇️ ", id="transpose-down")
-            yield Label("0", id="transpose-value", classes="value-holder")
-            yield Button("⬆️ ", id="transpose-up")
-
-    def on_button_pressed(self, event):
-        if event.button.id == "transpose-down":
-            self.current_transposition -= 1
-        elif event.button.id == "transpose-up":
-            self.current_transposition += 1
-        label = self.query_one("#transpose-value", Label)
-        label.update(str(self.current_transposition))
-        if self.current_transposition == 0:
-            label.remove_class("modified")
-        else:
-            label.add_class("modified")
-
-    def watch_current_transposition(self, value):
-        PLAY_SETTINGS.transpose = value
-
-
-class OctaveControls(Widget):
-    current_octave = reactive(0)
-
-    def __init__(self):
-        super().__init__()
-        self.current_octave = PLAY_SETTINGS.octave
-
-    def compose(self):
-        yield Label("Octave:")
-        with Horizontal():
-            yield Button("⬇️ ", id="octave-down")
-            yield Label("0", id="octave-value", classes="value-holder")
-            yield Button("⬆️ ", id="octave-up")
-
-    def on_button_pressed(self, event):
-        if event.button.id == "octave-down":
-            self.current_octave -= 1
-        elif event.button.id == "octave-up":
-            self.current_octave += 1
-        label = self.query_one("#octave-value", Label)
-        label.update(str(self.current_octave))
-        if self.current_octave == 0:
-            label.remove_class("modified")
-        else:
-            label.add_class("modified")
-
-    def watch_current_octave(self, value):
-        PLAY_SETTINGS.octave = value
-
-
 def tranposed_note_on(note_value: int):
     synthesizer.note_on(transpose_note(note_value), velocity=100)
 
@@ -133,6 +69,7 @@ def transposed_note_off(note_value: int):
 class MyApp(App):
     BINDINGS = [
         ("ctrl-c", "quit", "Quit"),
+        ("insert", "toggle_sustain", "Toggle sustain"),
     ]
     CSS_PATH = os.path.join(os.path.dirname(__file__), "style.css")
     TITLE = "UPiano"
@@ -146,12 +83,28 @@ class MyApp(App):
             note_off=transposed_note_off,
         )
         with Container(id="main"):
-            with Vertical(id="instrument-controls"):
+            with Container(id="controls"):
                 yield InstrumentSelector()
-                with Grid():
-                    yield OctaveControls()
-                    yield TranspositionControls()
+                yield NumericUpDownControl(
+                    "Transpose:",
+                    lambda value: setattr(PLAY_SETTINGS, "transpose", value),
+                    min_value=-11,
+                    max_value=11,
+                )
+                yield NumericUpDownControl(
+                    "Octave:",
+                    lambda value: setattr(PLAY_SETTINGS, "octave", value),
+                    min_value=-3,
+                    max_value=3,
+                )
+                yield LabeledSwitch(
+                    "Sustain",
+                    lambda value: synthesizer.set_sustain(100 if value else 0),
+                )
             yield self.keyboard_widget
+
+    def action_toggle_sustain(self):
+        self.query_one(LabeledSwitch).toggle()
 
     def on_key(self, event):
         # TODO: since the terminal doesn't have a key up and down events, we'll
@@ -162,11 +115,7 @@ class MyApp(App):
         key = event.key.upper()
         note_index = KEYMAP_CHAR_TO_INDEX.get(key)
         if note_index is not None:
-            virtual_key = VIRTUAL_KEYS[note_index]
-            self.keyboard_widget.handle_key_down(virtual_key)
-            self.set_timer(
-                1.5, partial(self.keyboard_widget.handle_key_up, virtual_key)
-            )
+            self.keyboard_widget.play_key(note_index)
 
 
 def run_app(args):
@@ -178,6 +127,7 @@ def run_app(args):
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description=__doc__)
 
     args = parser.parse_args()

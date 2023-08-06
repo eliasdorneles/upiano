@@ -3,32 +3,14 @@ KeyboardWidget {
     height: 14;
 }
 
-#instrument-controls {
-    align: left middle;
-}
-
-#instrument-controls > * {
+InstrumentSelector {
     width: 50;
     height: 5;
+    column-span: 2;
 }
 
-#instrument-controls Button {
-    min-width: 5;
+#controls {
+    layout: grid;
+    grid-size: 4;
+    padding: 1 2;
 }
-
-#instrument-controls .value-holder {
-    min-width: 2;
-    border: thick $primary;
-    text-style: bold;
-    padding: 0 1;
-    text-align: right;
-}
-
-#instrument-controls .value-holder.modified {
-    border: thick $secondary;
-}
-
-#instrument-controls Grid {
-    grid-size: 2;
-}
-

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import partial
 from textual.message import Message
 from textual.reactive import reactive
 from textual.containers import Horizontal
@@ -62,11 +63,7 @@ class Key:
     note: str
     midi_value: int
     position: int
-
-
-VIRTUAL_KEYS: list[Key] = [
-    Key(note, midi.note_to_midi(note), index) for index, note in enumerate(NOTES)
-]
+    playing: bool = False
 
 
 class KeyDown(Message):
@@ -91,10 +88,10 @@ class KeyUpperPart(Static):
     }
     """
 
-    def __init__(self, note_index, **kwargs):
+    def __init__(self, key, **kwargs):
         super().__init__(**kwargs)
         self._content_width = 0
-        self.key = VIRTUAL_KEYS[note_index]
+        self.key = key
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -135,9 +132,9 @@ class KeyLowerPart(Static):
     }
     """
 
-    def __init__(self, note_index, **kwargs):
+    def __init__(self, key, **kwargs):
         super().__init__(**kwargs)
-        self.key = VIRTUAL_KEYS[note_index]
+        self.key = key
         self.highlight = False
 
     def watch_highlight(self, value):
@@ -185,12 +182,13 @@ class KeyboardWidget(Widget):
 
     def __init__(self, note_on, note_off, **kwargs):
         super().__init__(**kwargs)
-        self.note_upper_widgets = [
-            KeyUpperPart(note_index=i) for i in range(len(NOTES))
+        self.virtual_keys: list[Key] = [
+            Key(note, midi.note_to_midi(note), index, playing=False)
+            for index, note in enumerate(NOTES)
         ]
-        self.note_lower_widgets = [
-            KeyLowerPart(note_index=i) for i in range(len(NOTES))
-        ]
+
+        self.note_upper_widgets = [KeyUpperPart(key) for key in self.virtual_keys]
+        self.note_lower_widgets = [KeyLowerPart(key) for key in self.virtual_keys]
         self.note_on = note_on
         self.note_off = note_off
 
@@ -204,13 +202,20 @@ class KeyboardWidget(Widget):
 
     def handle_key_down(self, key: Key):
         self.note_on(key.midi_value)
+        key.playing = True
         self.note_upper_widgets[key.position].highlight = True
         self.note_lower_widgets[key.position].highlight = True
 
     def handle_key_up(self, key: Key):
         self.note_off(key.midi_value)
+        key.playing = False
         self.note_upper_widgets[key.position].highlight = False
         self.note_lower_widgets[key.position].highlight = False
+
+    def play_key(self, key_index):
+        virtual_key = self.virtual_keys[key_index]
+        self.handle_key_down(virtual_key)
+        self.set_timer(0.3, partial(self.handle_key_up, virtual_key))
 
     def on_key_down(self, event):
         self.handle_key_down(event.key)

@@ -201,3 +201,9 @@ class MidiSynth:
 
     def note_off(self, note_value, channel=0):
         self.synthesizer.noteoff(channel, note_value)
+
+    def set_sustain(self, value, channel=0):
+        self.synthesizer.cc(channel, 64, value)
+
+    def set_volume(self, value, channel=0):
+        self.synthesizer.cc(channel, 7, value)
