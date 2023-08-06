@@ -12,9 +12,9 @@ format:  ## Format code
 help:  ## Display command usage
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+
 release: dist ## package and upload a release
-	#twine upload --repository upiano --verbose dist/*
-	poetry publish
+	twine upload --repository upiano --verbose dist/*
 
 dist: clean ## builds source and wheel package
 	poetry build
