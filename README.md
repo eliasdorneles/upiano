@@ -48,6 +48,6 @@ running: `python upiano/legacy.py`.
 
 Fast-forward to 2023, Elias attended EuroPython and learned the
 [Textual](https://textual.textualize.io) library there, got excited about
-terminal apps again and decided to reboot this project, and have even more fun
-by taking it to the next level. What the next level actually is, he's not quite
-sure, but it definitely involves learning MIDI stuff!
+terminal apps again and decided to reboot this project using the newly acquired
+knowledge, and add to the fun by plugging a true synthesizer to it, and playing
+with its controls.
