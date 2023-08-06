@@ -22,6 +22,24 @@ Make sure your terminal window is big enough.
 The wider you can make it, the more keys you'll have! 🎹 😀
 
 
+### How to play
+
+To play with the mouse, click on the notes you want to play.
+
+To play with the computer keyboard, there is a limited and currently hardcoded
+keymap that corresponds to thism which will play the notes on the left side:
+
+    ┌─┬──┬┬──┬─┬─┬──┬┬──┬┬──┬─┬─┬──┬┬──┬─┬─┬──┬┐
+    │ │██││██│ │ │██││██││██│ │ │██││██│ │ │██││
+    │ │W█││E█│ │ │T█││Y█││U█│ │ │O█││P█│ │ │██││
+    │ └┬─┘└┬─┘ │ └┬─┘└┬─┘└┬─┘ │ └┬─┘└┬─┘ │ └┬─┘│
+    │A │ S │ D │F │ G │  H│ J │K │ L │ ; │' │  │
+    └──┴───┴───┴──┴───┴───┴───┴──┴───┴───┴──┴──┘
+
+Note that since the terminal doesn't really support key press and release events (it receives a stream of characters instead), there is no way to support two key playing at the same time with the computer keyboard only.
+
+But you can play with the computer keyboard and with the mouse simultaneously, as you can see in this video: https://www.youtube.com/watch?v=0VXit110PcA
+
 ## Powered by
 
 * [Python](https://www.python.org) 🐍
