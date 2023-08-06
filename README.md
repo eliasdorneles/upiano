@@ -49,5 +49,14 @@ running: `python upiano/legacy.py`.
 Fast-forward to 2023, Elias attended EuroPython and learned the
 [Textual](https://textual.textualize.io) library there, got excited about
 terminal apps again and decided to reboot this project using the newly acquired
-knowledge, and add to the fun by plugging a true synthesizer to it, and playing
-with its controls.
+knowledge, package and distribute it, and add to the fun by plugging a true
+synthesizer to it, and playing with its controls.
+
+
+### Changelog:
+
+* **v0.1.0**
+    * first version released to PyPI, already using Textual
+* **v0.1.1**
+    * added sustain
+    * fix mouse handling, and allow playing by "swiping" over keys
