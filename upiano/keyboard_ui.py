@@ -232,16 +232,9 @@ class KeyboardWidget(Widget):
             self.keys_pressed[key.midi_value] = False
 
     def on_key_down(self, event):
-        key_index = KEYMAP_CHAR_TO_INDEX.get(event.key.upper)
-        print(event.key)
-        if key_index is not None:
-            self.handle_key_down(self.virtual_keys[key_index])
-
-    def on_key_down(self, event):
         if hasattr(event, 'key'):
             key_value = event.key
             key_index = KEYMAP_CHAR_TO_INDEX.get(key_value.upper())
-            print(key_value)
             if key_index is not None:
                 self.handle_key_down(self.virtual_keys[key_index])
 
