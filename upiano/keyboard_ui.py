@@ -204,6 +204,9 @@ class KeyboardWidget(Widget):
         self.note_on = note_on
         self.note_off = note_off
 
+        # Add a dictionary to keep track of which keys are currently being pressed
+        self.keys_pressed = {}
+
     def compose(self):
         with Horizontal():
             for w in self.note_upper_widgets:
@@ -213,20 +216,36 @@ class KeyboardWidget(Widget):
                 yield w
 
     def handle_key_down(self, key: Key):
-        self.note_on(key.midi_value)
-        self.note_upper_widgets[key.position].highlight = True
-        self.note_lower_widgets[key.position].highlight = True
+        # Only trigger note_on if the key was not already being pressed
+        if not self.keys_pressed.get(key.midi_value):
+            self.note_on(key.midi_value)
+            self.note_upper_widgets[key.position].highlight = True
+            self.note_lower_widgets[key.position].highlight = True
+            self.keys_pressed[key.midi_value] = True
 
     def handle_key_up(self, key: Key):
-        self.note_off(key.midi_value)
-        self.note_upper_widgets[key.position].highlight = False
-        self.note_lower_widgets[key.position].highlight = False
+        # Only trigger note_off if the key was being pressed
+        if self.keys_pressed.get(key.midi_value):
+            self.note_off(key.midi_value)
+            self.note_upper_widgets[key.position].highlight = False
+            self.note_lower_widgets[key.position].highlight = False
+            self.keys_pressed[key.midi_value] = False
 
     def on_key_down(self, event):
-        self.handle_key_down(event.key)
+        key_index = KEYMAP_CHAR_TO_INDEX.get(event.key.upper)
+        print(event.key)
+        if key_index is not None:
+            self.handle_key_down(self.virtual_keys[key_index])
 
-    def on_key_up(self, event):
-        self.handle_key_up(event.key)
+    def on_key_down(self, event):
+        if hasattr(event, 'key'):
+            key_value = event.key
+            key_index = KEYMAP_CHAR_TO_INDEX.get(key_value.upper())
+            print(key_value)
+            if key_index is not None:
+                self.handle_key_down(self.virtual_keys[key_index])
+
+
 
     def play_key(self, key_index):
         virtual_key = self.virtual_keys[key_index]
