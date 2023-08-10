@@ -29,7 +29,7 @@ The wider you can make it, the more keys you'll have! 🎹 😀
 To play with the mouse, click on the notes you want to play.
 
 To play with the computer keyboard, there is a limited and currently hardcoded
-keymap that corresponds to thism which will play the notes on the left side:
+keymap that corresponds to the following, which will play the notes on the left side:
 
     ┌─┬──┬┬──┬─┬─┬──┬┬──┬┬──┬─┬─┬──┬┬──┬─┬─┬──┬┐
     │ │██││██│ │ │██││██││██│ │ │██││██│ │ │██││
