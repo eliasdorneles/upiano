@@ -12,7 +12,7 @@ A Piano in your terminal.
 
 First, you'll need to install [FluidSynth](https://www.fluidsynth.org/), if you haven't already. [See here how to install FluidSynth on your system](https://github.com/FluidSynth/fluidsynth/wiki/Download).
 
-Then, install `upiano` via pip:
+Then, install `upiano` via pip (requires Python >= 3.11):
 
     pip install upiano
 
