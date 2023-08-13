@@ -142,14 +142,29 @@ class Slider(Widget):
             button.styles.margin = (0, 0, 0, position)
         self.post_message(self.PositionUpdate(position))
 
+    def increase_position(self):
+        self.position = min(20, self.position + 1)
+
+    def decrease_position(self):
+        self.position = max(0, self.position - 1)
+
     def on_mount(self):
         self._watch_position(self.position)
 
     def on_key(self, event):
         if event.key == "left":
-            self.position = max(0, self.position - 1)
+            self.decrease_position()
         elif event.key == "right":
-            self.position = min(20, self.position + 1)
+            self.increase_position()
+
+    def on_click(self, event):
+        self.focus()
+
+    def on_mouse_scroll_up(self, event) -> None:
+        self.decrease_position()
+
+    def on_mouse_scroll_down(self, event) -> None:
+        self.increase_position()
 
 
 class LabeledSlider(Widget):
