@@ -75,8 +75,11 @@ synthesizer to it, and playing with its controls.
 
 ### Changelog:
 
-* **v0.1.0**
-    * first version released to PyPI, already using Textual
+* **v0.1.2**
+    * added volume, reverb and chorus sliders
+    * fix packaging config, to work on any Python 3.10+
 * **v0.1.1**
     * added sustain
     * fix mouse handling, and allow playing by "swiping" over keys
+* **v0.1.0**
+    * first version released to PyPI, already using Textual
