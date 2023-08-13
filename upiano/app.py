@@ -17,6 +17,7 @@ from upiano import midi
 from upiano.keyboard_ui import KEYMAP_CHAR_TO_INDEX
 from upiano.keyboard_ui import KeyboardWidget
 from upiano.widgets import LabeledSwitch
+from upiano.widgets import LabeledSlider
 from upiano.widgets import NumericUpDownControl
 
 SOUNDFONTS_DIR = os.path.join(os.path.dirname(__file__), "soundfonts")
@@ -47,7 +48,7 @@ class InstrumentSelector(Widget):
         ]
 
     def compose(self):
-        yield Label("Instrument:")
+        yield Label("Instrument")
         yield Select(
             prompt="Select instrument",
             allow_blank=False,
@@ -88,13 +89,13 @@ class MyApp(App):
             with Container(id="controls"):
                 yield InstrumentSelector()
                 yield NumericUpDownControl(
-                    "Transpose:",
+                    "Transpose",
                     lambda value: setattr(PLAY_SETTINGS, "transpose", value),
                     min_value=-11,
                     max_value=11,
                 )
                 yield NumericUpDownControl(
-                    "Octave:",
+                    "Octave",
                     lambda value: setattr(PLAY_SETTINGS, "octave", value),
                     min_value=-3,
                     max_value=3,
@@ -102,6 +103,10 @@ class MyApp(App):
                 yield LabeledSwitch(
                     "Sustain",
                     lambda value: synthesizer.set_sustain(100 if value else 0),
+                )
+                yield LabeledSlider(
+                    "Volume",
+                    lambda value: synthesizer.set_volume(value),
                 )
             yield self.keyboard_widget
 
