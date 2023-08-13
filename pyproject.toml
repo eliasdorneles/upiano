@@ -11,7 +11,7 @@ packages = [{include = "upiano"}]
 upiano = "upiano.app:main"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 textual = "^0.32.0"
 pyFluidSynth = "^1.3.2"
 
