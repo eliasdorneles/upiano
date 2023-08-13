@@ -103,7 +103,7 @@ class Slider(Widget):
     }
 
     Slider:focus {
-        background: $primary;
+        background: $primary-lighten-1;
         max-width: 23;
         layers: base-layer top-layer;
     }
@@ -113,6 +113,9 @@ class Slider(Widget):
         height: 3;
         background: $primary;
         layer: top-layer;
+        border: none;
+        border-top: tall $panel-lighten-2;
+        border-bottom: tall $panel-darken-3;
     }
 
     Slider:focus .slider-button {
