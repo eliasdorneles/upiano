@@ -6,6 +6,7 @@ from textual.widgets import Button
 from textual.widgets import Label
 from textual.widgets import Static
 from textual.widgets import Switch
+from textual.css.query import NoMatches
 
 
 class NumericUpDownControl(Widget):
@@ -83,29 +84,39 @@ class LabeledSwitch(Widget):
         self.query_one(Switch).toggle()
 
 
-def _draw_slider(position: int) -> str:
-    position = max(0, min(position, 20))
-    naked_slider = (
-        """
+_NAKED_SLIDER = """
 .╷         ╷         ╷
 .├─┼─┼─┼─┼─┼─┼─┼─┼─┼─┤
 .╵         ╵         ╵
-   """.strip()
-        .replace(".", " ")
-        .splitlines()
-    )
-    slider = [line[:position] + "███" + line[position + 3 :] for line in naked_slider]
-    return "\n".join(slider)
+   """.strip().replace(
+    ".", " "
+)
 
 
-class Slider(Static):
+class Slider(Widget):
     position = reactive(0)
     can_focus = True
 
     DEFAULT_CSS = """
+    Slider {
+        height: 3;
+    }
+
     Slider:focus {
         background: $primary;
         max-width: 23;
+        layers: base-layer top-layer;
+    }
+
+    .slider-button {
+        width: 3;
+        height: 3;
+        background: $primary;
+        layer: top-layer;
+    }
+
+    Slider:focus .slider-button {
+        background: $secondary;
     }
     """
 
@@ -115,12 +126,24 @@ class Slider(Static):
             self.position = position
 
     def __init__(self, position=0, **kwargs):
-        super().__init__(_draw_slider(0), **kwargs)
+        super().__init__(**kwargs)
         self.position = position
 
+    def compose(self):
+        yield Static(_NAKED_SLIDER)
+        yield Static(classes="slider-button")
+
     def _watch_position(self, position):
-        self.update(_draw_slider(position))
+        try:
+            button = self.query_one("Static.slider-button", Static)
+        except NoMatches:
+            pass
+        else:
+            button.styles.margin = (0, 0, 0, position)
         self.post_message(self.PositionUpdate(position))
+
+    def on_mount(self):
+        self._watch_position(self.position)
 
     def on_key(self, event):
         if event.key == "left":

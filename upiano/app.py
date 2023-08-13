@@ -108,6 +108,16 @@ class MyApp(App):
                     "Volume",
                     lambda value: synthesizer.set_volume(value),
                 )
+                yield LabeledSlider(
+                    "Reverb",
+                    lambda value: synthesizer.set_reverb(value),
+                    value=0,
+                )
+                yield LabeledSlider(
+                    "Chorus",
+                    lambda value: synthesizer.set_chorus(value),
+                    value=0,
+                )
             yield self.keyboard_widget
 
     def action_toggle_sustain(self):

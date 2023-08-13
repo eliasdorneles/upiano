@@ -208,3 +208,9 @@ class MidiSynth:
 
     def set_volume(self, value, channel=0):
         self.synthesizer.cc(channel, 7, value)
+
+    def set_chorus(self, value, channel=0):
+        self.synthesizer.cc(channel, 93, value)
+
+    def set_reverb(self, value, channel=0):
+        self.synthesizer.cc(channel, 91, value)
