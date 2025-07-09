@@ -23,6 +23,9 @@ And then run:
 Make sure your terminal window is big enough.
 The wider you can make it, the more keys you'll have! 🎹 😀
 
+**NOTE:** If you're having stuttering or latency issues on latest Ubuntu, try
+running it like this: `PIPEWIRE_QUANTUM=256/48000 upiano`. This will tell
+Pipewire to use a smaller buffer size (256 bytes) than the default.
 
 ### How to play
 
